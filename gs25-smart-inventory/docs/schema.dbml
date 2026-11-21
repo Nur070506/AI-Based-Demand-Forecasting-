@@ -1,0 +1,58 @@
+// GS25 Smart Inventory Management System - DBML Schema (dbdiagram.io)
+
+Table stores {
+  store_id int [pk, increment]
+  store_code varchar(30) [not null, unique]
+  store_name varchar(120) [not null]
+  district varchar(80) [not null]
+  address varchar(255)
+  is_active boolean [not null, default: true]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table products {
+  product_id int [pk, increment]
+  sku_code varchar(40) [not null, unique]
+  product_name varchar(150) [not null]
+  category varchar(80) [not null]
+  unit_price decimal(10,2) [not null]
+  current_stock int [not null, default: 0]
+  reorder_level int [not null, default: 10]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table weather_data {
+  weather_date date [pk]
+  store_id int [pk, ref: > stores.store_id]
+  temperature_c decimal(5,2) [not null]
+  precipitation_mm decimal(6,2) [not null, default: 0.00]
+  humidity_pct decimal(5,2)
+  is_holiday boolean [not null, default: false]
+}
+
+Table sales {
+  sale_id bigint [pk, increment]
+  sale_date date [not null]
+  store_id int [not null, ref: > stores.store_id]
+  product_id int [not null, ref: > products.product_id]
+  quantity_sold int [not null]
+  unit_sale_price decimal(10,2) [not null]
+  discount_pct decimal(5,2) [not null, default: 0.00]
+  is_promo boolean [not null, default: false]
+  promo_label varchar(100)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
+
+Table demand_forecasts {
+  forecast_id bigint [pk, increment]
+  forecast_date date [not null]
+  store_id int [not null, ref: > stores.store_id]
+  product_id int [not null, ref: > products.product_id]
+  predicted_qty int [not null]
+  model_version varchar(50) [not null, default: 'rf_regressor_v1']
+  generated_at timestamp [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (forecast_date, store_id, product_id, model_version) [unique]
+  }
+}
